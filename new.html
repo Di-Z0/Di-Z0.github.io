@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新年快乐</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            display: block;
+        }
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 40px;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            text-align: center;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+<canvas id="fireworkCanvas"></canvas>
+<div id="message"></div> <!-- 用于显示祝福语 -->
+
+<script>
+    const canvas = document.getElementById('fireworkCanvas');
+    const ctx = canvas.getContext('2d');
+    const messageDiv = document.getElementById('message');
+    
+    // 设置画布大小
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const COLORS = [
+        '255, 223, 0',    // 亮黄色
+        '255, 69, 0',     // 亮橙色
+        '0, 255, 255',    // 亮青色
+        '255, 20, 147',   // 亮深粉色
+        '0, 191, 255',    // 亮天蓝色
+        '255, 105, 180',  // 亮深粉色
+        '0, 255, 0',      // 亮绿色
+        '255, 0, 0',      // 亮红色
+        '255, 255, 255',  // 白色
+        '255, 99, 71'     // 亮番茄色
+    ];
+
+    let fireworks = [];
+    const explosionSound = new Audio('https://www.soundjay.com/button/beep-07.wav');
+
+    // 显示祝福语的数组
+    const messages = [
+        "飞导",
+        "过年啦",
+        "新的一年",
+        "祝您",
+        "成为院士",
+        "不是梦！"
+    ];
+
+    // 显示祝福语函数
+    let messageIndex = 0;
+    function displayMessage() {
+        if (messageIndex < messages.length) {
+            messageDiv.textContent = messages[messageIndex];
+            messageIndex++;
+            setTimeout(displayMessage, 1500);  // 每个祝福语显示3秒
+        } else {
+            messageDiv.style.display = 'none';  // 所有祝福语显示完后隐藏
+        }
+    }
+
+    // 启动祝福语显示
+    displayMessage();
+
+    // 定义光圈效果的类
+    class Glow {
+        constructor(x, y, color) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+            this.size = 0;
+            this.maxSize = 200;
+            this.opacity = 0.5;
+            this.growRate = 2;
+        }
+
+        update() {
+            if (this.size < this.maxSize) {
+                this.size += this.growRate;
+                this.opacity -= 0.01;
+            }
+        }
+
+        draw() {
+            if (this.size > 0) {
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+                gradient.addColorStop(0, `rgba(${this.color}, ${this.opacity})`);
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+    }
+
+    class Particle {
+        constructor(x, y, color, angle, speed, size, life) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+            this.angle = angle;
+            this.speed = speed;
+            this.size = size;
+            this.life = life;
+            this.history = [{x: x, y: y}];
+            this.gravity = 0.05;
+        }
+
+        update() {
+            this.speed.y += this.gravity;
+            this.x += this.speed.x;
+            this.y += this.speed.y;
+
+            this.history.push({x: this.x, y: this.y});
+            if (this.history.length > 5) {
+                this.history.shift();
+            }
+
+            this.life -= 1;
+        }
+
+        draw() {
+            for (let i = 0; i < this.history.length; i++) {
+                let alpha = Math.max(0, this.life - i * (this.life / this.history.length));
+                ctx.fillStyle = `rgba(${this.color}, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.history[i].x, this.history[i].y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            if (this.life > 0) {
+                ctx.fillStyle = `rgba(${this.color}, ${this.life / 100})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+    }
+
+    class Firework {
+        constructor(x, y, color) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+            this.particles = [];
+            this.exploded = false;
+            this.numParticles = 500;
+            this.glows = [];
+        }
+
+        explode() {
+            const maxRadius = 3;
+
+            for (let i = 0; i < this.numParticles; i++) {
+                const distance = Math.random() * maxRadius;
+                const angle = Math.random() * 2 * Math.PI;
+                const speed = {
+                    x: Math.cos(angle) * distance,
+                    y: Math.sin(angle) * distance
+                };
+                const size = Math.random() * 1 + 0.3;
+                const life = Math.random() * 50 + 50;
+
+                const particle = new Particle(this.x, this.y, this.color, angle, speed, size, life);
+                this.particles.push(particle);
+            }
+
+            this.glows.push(new Glow(this.x, this.y, this.color));
+            this.exploded = true;
+
+            explosionSound.play();
+        }
+
+        update() {
+            if (!this.exploded) {
+                this.y -= 6;
+                if (this.y <= canvas.height / 3) {
+                    this.explode();
+                }
+            } else {
+                for (let particle of this.particles) {
+                    particle.update();
+                }
+                for (let glow of this.glows) {
+                    glow.update();
+                }
+            }
+        }
+
+        draw() {
+            if (!this.exploded) {
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                for (let particle of this.particles) {
+                    particle.draw();
+                }
+                for (let glow of this.glows) {
+                    glow.draw();
+                }
+            }
+        }
+    }
+
+    function createFirework() {
+        const x = Math.random() * canvas.width;
+        const y = canvas.height;
+
+        let colorIndex;
+        do {
+            colorIndex = Math.floor(Math.random() * COLORS.length);
+        } while (colorIndex === lastColorIndex);
+
+        lastColorIndex = colorIndex;
+
+        const color = COLORS[colorIndex];
+        const firework = new Firework(x, y, color);
+        fireworks.push(firework);
+    }
+
+    function drawBackground() {
+        const gradient = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width);
+        gradient.addColorStop(0, `rgba(255, 255, 255, 0.5)`);
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
+
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    let lastColorIndex = -1;
+
+    function animate() {
+        drawBackground();
+
+        if (Math.random() < 0.1) {  // 增加烟花数量的生成概率
+            for (let i = 0; i < 3; i++) { // 每次生成多个烟花
+                createFirework();
+            }
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = fireworks.length - 1; i >= 0; i--) {
+            const firework = fireworks[i];
+            firework.update();
+            firework.draw();
+
+            if (firework.exploded && firework.particles.every(p => p.life <= 0)) {
+                fireworks.splice(i, 1);
+            }
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+</script>
+</body>
+</html>
