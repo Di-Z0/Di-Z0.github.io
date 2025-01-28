@@ -71,7 +71,7 @@
         if (messageIndex < messages.length) {
             messageDiv.textContent = messages[messageIndex];
             messageIndex++;
-            setTimeout(displayMessage, 1500);  // 每个祝福语显示3秒
+            setTimeout(displayMessage, 1500);  // 每个祝福语显示1.5秒
         } else {
             messageDiv.style.display = 'none';  // 所有祝福语显示完后隐藏
         }
@@ -252,12 +252,6 @@
     function animate() {
         drawBackground();
 
-        if (Math.random() < 0.02) {  // 增加烟花数量的生成概率
-            for (let i = 0; i < 5; i++) { // 每次生成多个烟花
-                createFirework();
-            }
-        }
-
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         for (let i = fireworks.length - 1; i >= 0; i--) {
@@ -272,6 +266,9 @@
 
         requestAnimationFrame(animate);
     }
+
+    // 每隔1秒生成一个烟花
+    setInterval(createFirework, 350);
 
     animate();
 </script>
