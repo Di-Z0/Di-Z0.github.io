@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>水产品冷链流通沉浸式体验系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/gsap/3.11.4/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a2a43, #1a5f7a);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: white;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(5, 25, 45, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #0c3a5c, #0f5b7d);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            border-bottom: 2px solid #40e0d0;
+            z-index: 10;
+        }
+        
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(64, 224, 208, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+            color: #a8dadc;
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            height: calc(100% - 120px);
+            overflow: hidden;
+        }
+        
+        .vr-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            border-right: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        .scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #1a2a6c, #2c3e50, #0d47a1);
+            overflow: hidden;
+            perspective: 1000px;
+        }
+        
+        .fish-perspective {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateY(0deg);
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 1s;
+        }
+        
+        .location {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            backface-visibility: hidden;
+        }
+        
+        .location.active {
+            display: flex;
+        }
+        
+        .location-title {
+            font-size: 2.5rem;
+            color: #40e0d0;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px rgba(64, 224, 208, 0.8);
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: rgba(0, 20, 40, 0.6);
+            border-radius: 10px;
+        }
+        
+        .location-desc {
+            font-size: 1.2rem;
+            max-width: 600px;
+            text-align: center;
+            color: #e0f7fa;
+            margin-bottom: 30px;
+            line-height: 1.7;
+            padding: 0 20px;
+            background: rgba(0, 20, 40, 0.6);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .environment {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        
+        /* 鱼的位置调整 - 降低垂直位置 */
+        .fish-model {
+            position: absolute;
+            top: 72%; /* 调整鱼的位置，使其更靠下 */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 70px;
+            z-index: 10;
+            transition: all 1s ease;
+        }
+        
+        .fish-body {
+            position: absolute;
+            width: 120px;
+            height: 50px;
+            background: linear-gradient(90deg, #4a8fe7, #2a6bcc);
+            border-radius: 50%;
+            top: 10px;
+            left: 15px;
+            box-shadow: 0 0 15px rgba(42, 107, 204, 0.6);
+            transition: all 1s ease;
+        }
+        
+        .fish-tail {
+            position: absolute;
+            width: 40px;
+            height: 50px;
+            background: linear-gradient(90deg, #2a6bcc, #1d4f9e);
+            border-radius: 50%;
+            top: 10px;
+            left: 135px;
+            clip-path: polygon(0 0, 100% 25%, 100% 75%, 0 100%);
+        }
+        
+        .fish-fin {
+            position: absolute;
+            width: 80px;
+            height: 30px;
+            background: #1d4f9e;
+            border-radius: 50%;
+            top: -15px;
+            left: 65px;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+        
+        .eye {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: white;
+            border-radius: 50%;
+            top: 25px;
+            left: 40px;
+            box-shadow: 0 0 5px white;
+        }
+        
+        .eye::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: black;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+        }
+        
+        .data-panel {
+            width: 350px;
+            background: rgba(0, 20, 40, 0.85);
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        .panel-title {
+            font-size: 1.5rem;
+            color: #40e0d0;
+            margin-bottom: 20px;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #40e0d0;
+        }
+        
+        .sensor-data {
+            background: rgba(0, 30, 60, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(64, 224, 208, 0.3);
+        }
+        
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(64, 224, 208, 0.2);
+        }
+        
+        .data-item:last-child {
+            border-bottom: none;
+        }
+        
+        .data-label {
+            color: #a8dadc;
+        }
+        
+        .data-value {
+            font-weight: bold;
+            color: #ff8c00;
+        }
+        
+        .quality-indicators {
+            background: rgba(0, 30, 60, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(64, 224, 208, 0.3);
+        }
+        
+        .indicator {
+            margin-bottom: 15px;
+        }
+        
+        .indicator-title {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: #e0f7fa;
+        }
+        
+        .indicator-bar {
+            height: 12px;
+            background: rgba(64, 224, 208, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .indicator-progress {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 1s ease;
+        }
+        
+        .ai-prediction {
+            background: rgba(0, 30, 60, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(64, 224, 208, 0.3);
+        }
+        
+        .prediction-title {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #40e0d0;
+            font-size: 1.2rem;
+        }
+        
+        .prediction-content {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #e0f7fa;
+            background: rgba(0, 15, 30, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #ff8c00;
+        }
+        
+        .prediction-content .highlight {
+            color: #ff8c00;
+            font-weight: bold;
+        }
+        
+        .decision-point {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 30, 60, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            width: 90%;
+            max-width: 800px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 140, 0, 0.5);
+            z-index: 20;
+            display: none;
+        }
+        
+        .decision-point.active {
+            display: block;
+        }
+        
+        .decision-title {
+            font-size: 1.4rem;
+            color: #ff8c00;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .decision-desc {
+            font-size: 1.1rem;
+            color: #e0f7fa;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .decision-options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .option-btn {
+            padding: 12px 25px;
+            background: linear-gradient(45deg, #0f5b7d, #0c3a5c);
+            border: 1px solid #40e0d0;
+            border-radius: 30px;
+            color: #a8dadc;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            min-width: 180px;
+            text-align: center;
+        }
+        
+        .option-btn:hover {
+            background: linear-gradient(45deg, #0c3a5c, #0f5b7d);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            padding: 15px;
+            background: rgba(0, 20, 40, 0.7);
+            border-top: 1px solid rgba(64, 224, 208, 0.2);
+            gap: 15px;
+        }
+        
+        .control-btn {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(45deg, #0f5b7d, #0c3a5c);
+            color: #a8dadc;
+            border: 1px solid #40e0d0;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(45deg, #0c3a5c, #0f5b7d);
+            color: white;
+        }
+        
+        .control-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .bubbles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: rise 10s infinite ease-in;
+        }
+        
+        .bubble:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .bubble:nth-child(2) { left: 20%; animation-delay: 2s; width: 15px; height: 15px; }
+        .bubble:nth-child(3) { left: 35%; animation-delay: 4s; width: 25px; height: 25px; }
+        .bubble:nth-child(4) { left: 50%; animation-delay: 1s; }
+        .bubble:nth-child(5) { left: 65%; animation-delay: 5s; width: 18px; height: 18px; }
+        .bubble:nth-child(6) { left: 80%; animation-delay: 3s; }
+        .bubble:nth-child(7) { left: 90%; animation-delay: 6s; width: 12px; height: 12px; }
+        
+        @keyframes rise {
+            0% { bottom: -50px; transform: translateX(0); opacity: 0; }
+            10% { opacity: 0.5; }
+            50% { transform: translateX(50px); }
+            100% { bottom: 100%; transform: translateX(100px); opacity: 0; }
+        }
+        
+        /* 鱼游泳动画 */
+        @keyframes swim {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            25% { transform: translate(-50%, -50%) rotate(-5deg); }
+            50% { transform: translate(-50%, -50%) rotate(0deg); }
+            75% { transform: translate(-50%, -50%) rotate(5deg); }
+            100% { transform: translate(-50%, -50%) rotate(0deg); }
+        }
+        
+        .swimming {
+            animation: swim 3s infinite ease-in-out;
+        }
+        
+        /* 状态栏位置调整 - 移至左上角 */
+        .fish-status {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            text-align: center;
+            border: 1px solid #40e0d0;
+            max-width: 80%;
+            z-index: 15;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-icon {
+            color: #40e0d0;
+            font-size: 1.3rem;
+        }
+        
+        /* 添加视觉引导线 */
+        .status-indicator {
+            position: absolute;
+            top: 75px;
+            left: 50px;
+            width: 2px;
+            height: calc(72% - 80px);
+            background: rgba(64, 224, 208, 0.3);
+            z-index: 5;
+        }
+        
+        .status-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #40e0d0;
+            box-shadow: 0 0 10px rgba(64, 224, 208, 0.8);
+        }
+        
+        .status-indicator::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff8c00;
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.8);
+        }
+        
+        /* 场景背景元素 */
+        .scene-element {
+            position: absolute;
+            opacity: 0.3;
+        }
+        
+        .coral {
+            bottom: 20px;
+            left: 30px;
+            font-size: 4rem;
+            color: #ff6b6b;
+            transform: rotate(-20deg);
+        }
+        
+        .seaweed {
+            bottom: 10px;
+            right: 50px;
+            font-size: 5rem;
+            color: #4CAF50;
+            transform: rotate(15deg);
+        }
+        
+        .rock {
+            bottom: 0;
+            left: 45%;
+            font-size: 6rem;
+            color: #795548;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .data-panel {
+                width: 100%;
+                height: 300px;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .location-title {
+                font-size: 2rem;
+            }
+            
+            .location-desc {
+                font-size: 1rem;
+                padding: 0 15px;
+            }
+            
+            .decision-options {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .option-btn {
+                width: 100%;
+            }
+            
+            /* 移动端调整鱼的位置 */
+            .fish-model {
+                top: 68%;
+            }
+            
+            /* 移动端调整状态栏位置 */
+            .fish-status {
+                top: 15px;
+                left: 15px;
+                font-size: 1rem;
+                padding: 8px 16px;
+            }
+            
+            .status-indicator {
+                display: none; /* 在移动端隐藏引导线 */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-fish"></i> 水产品冷链流通沉浸式体验系统</h1>
+            <p>扮演一条鱼的角色，体验从渔场到餐桌的冷链旅程，理解低温保藏的重要性</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="vr-container">
+                <div class="scene">
+                    <div class="bubbles">
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                        <div class="bubble"></div>
+                    </div>
+                    
+                    <div class="fish-perspective">
+                        <!-- 视觉引导元素 -->
+                        <div class="status-indicator"></div>
+                        
+                        <!-- 场景装饰元素 -->
+                        <div class="scene-element coral"><i class="fas fa-hands"></i></div>
+                        <div class="scene-element seaweed"><i class="fas fa-seedling"></i></div>
+                        <div class="scene-element rock"><i class="fas fa-mountain"></i></div>
+                        
+                        <!-- 渔场场景 -->
+                        <div class="location active" id="farm">
+                            <div class="location-title"><i class="fas fa-water"></i> 水产养殖场</div>
+                            <div class="location-desc">你生活在一个现代化的水产养殖场，水质清澈，温度适宜。这是你旅程的起点。</div>
+                            <div class="environment"></div>
+                            <div class="fish-model swimming">
+                                <div class="fish-body">
+                                    <div class="fish-tail"></div>
+                                    <div class="fish-fin"></div>
+                                    <div class="eye"></div>
+                                </div>
+                            </div>
+                            <div class="fish-status">
+                                <i class="fas fa-heartbeat status-icon"></i> 
+                                <span>状态：健康活跃</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 捕捞场景 -->
+                        <div class="location" id="fishing">
+                            <div class="location-title"><i class="fas fa-anchor"></i> 捕捞作业区</div>
+                            <div class="location-desc">你被专业捕捞队捕获，这是冷链旅程的第一个关键节点。温度控制从这里开始变得至关重要。</div>
+                            <div class="environment"></div>
+                            <div class="fish-model swimming">
+                                <div class="fish-body">
+                                    <div class="fish-tail"></div>
+                                    <div class="fish-fin"></div>
+                                    <div class="eye"></div>
+                                </div>
+                            </div>
+                            <div class="fish-status">
+                                <i class="fas fa-tint status-icon"></i> 
+                                <span>状态：轻微应激反应</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 加工厂场景 -->
+                        <div class="location" id="processing">
+                            <div class="location-title"><i class="fas fa-industry"></i> 水产品加工厂</div>
+                            <div class="location-desc">在加工厂，你被清洗、处理和包装。低温环境能抑制细菌生长，延长你的保鲜期。</div>
+                            <div class="environment"></div>
+                            <div class="fish-model">
+                                <div class="fish-body">
+                                    <div class="fish-tail"></div>
+                                    <div class="fish-fin"></div>
+                                    <div class="eye"></div>
+                                </div>
+                            </div>
+                            <div class="fish-status">
+                                <i class="fas fa-box-open status-icon"></i> 
+                                <span>状态：已处理，等待包装</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 运输场景 -->
+                        <div class="location" id="transport">
+                            <div class="location-title"><i class="fas fa-truck"></i> 冷链运输车</div>
+                            <div class="location-desc">你被装入冷链运输车，运输过程中的温度波动会直接影响你的品质。</div>
+                            <div class="environment"></div>
+                            <div class="fish-model">
+                                <div class="fish-body">
+                                    <div class="fish-tail"></div>
+                                    <div class="fish-fin"></div>
+                                    <div class="eye"></div>
+                                </div>
+                            </div>
+                            <div class="fish-status">
+                                <i class="fas fa-shipping-fast status-icon"></i> 
+                                <span>状态：冷链运输中</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 超市场景 -->
+                        <div class="location" id="market">
+                            <div class="location-title"><i class="fas fa-store"></i> 生鲜超市</div>
+                            <div class="location-desc">你在超市的冷藏展示柜中等待消费者。这是冷链的最后一环，温度控制仍然至关重要。</div>
+                            <div class="environment"></div>
+                            <div class="fish-model">
+                                <div class="fish-body">
+                                    <div class="fish-tail"></div>
+                                    <div class="fish-fin"></div>
+                                    <div class="eye"></div>
+                                </div>
+                            </div>
+                            <div class="fish-status">
+                                <i class="fas fa-shopping-cart status-icon"></i> 
+                                <span>状态：冷藏展示中</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 餐桌场景 -->
+                        <div class="location" id="table">
+                            <div class="location-title"><i class="fas fa-utensils"></i> 消费者餐桌</div>
+                            <div class="location-desc">你已完成冷链旅程，消费者的烹饪方式将决定你的最终价值。</div>
+                            <div class="environment"></div>
+                            <div class="fish-model">
+                                <div class="fish-body">
+                                    <div class="fish-tail"></div>
+                                    <div class="fish-fin"></div>
+                                    <div class="eye"></div>
+                                </div>
+                            </div>
+                            <div class="fish-status">
+                                <i class="fas fa-utensil-spoon status-icon"></i> 
+                                <span>状态：等待烹饪</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 渔场决策点 -->
+                    <div class="decision-point" id="decision-1">
+                        <div class="decision-title">养殖场管理决策</div>
+                        <div class="decision-desc">作为养殖场经理，你需要决定捕捞前的准备工作：</div>
+                        <div class="decision-options">
+                            <div class="option-btn" data-decision="precool">预冷处理（最佳实践）</div>
+                            <div class="option-btn" data-decision="ice">加冰处理（标准做法）</div>
+                            <div class="option-btn" data-decision="none">直接捕捞（无处理）</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 捕捞决策点 -->
+                    <div class="decision-point" id="decision-2">
+                        <div class="decision-title">捕捞作业决策</div>
+                        <div class="decision-desc">作为捕捞队长，你需要决定如何处理捕获的鱼：</div>
+                        <div class="decision-options">
+                            <div class="option-btn" data-decision="immediate">立即冷藏处理</div>
+                            <div class="option-btn" data-decision="delay">甲板上停留1小时</div>
+                            <div class="option-btn" data-decision="sun">阳光下放置30分钟</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 加工厂决策点 -->
+                    <div class="decision-point" id="decision-3">
+                        <div class="decision-title">加工处理决策</div>
+                        <div class="decision-desc">作为加工厂主管，你需要决定加工环境：</div>
+                        <div class="decision-options">
+                            <div class="option-btn" data-decision="lowtemp">低温无菌车间（最佳）</div>
+                            <div class="option-btn" data-decision="normal">标准车间处理</div>
+                            <div class="option-btn" data-decision="room">室温环境处理</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 运输决策点 -->
+                    <div class="decision-point" id="decision-4">
+                        <div class="decision-title">运输过程决策</div>
+                        <div class="decision-desc">作为物流经理，你需要应对运输中的突发状况：</div>
+                        <div class="decision-options">
+                            <div class="option-btn" data-decision="repair">立即联系维修团队，预计等待2小时</div>
+                            <div class="option-btn" data-decision="transfer">安排货物转运到备用车辆，预计耗时1小时</div>
+                            <div class="option-btn" data-decision="continue">继续行驶到目的地，预计3小时到达</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 超市决策点 -->
+                    <div class="decision-point" id="decision-5">
+                        <div class="decision-title">销售管理决策</div>
+                        <div class="decision-desc">作为超市经理，你需要决定产品展示方式：</div>
+                        <div class="decision-options">
+                            <div class="option-btn" data-decision="closed">封闭式冷藏柜（最佳）</div>
+                            <div class="option-btn" data-decision="open">开放式冷藏柜</div>
+                            <div class="option-btn" data-decision="icebed">冰床展示（无冷藏）</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="data-panel">
+                <div class="panel-title"><i class="fas fa-thermometer-half"></i> 冷链监控数据</div>
+                
+                <div class="sensor-data">
+                    <div class="data-item">
+                        <span class="data-label">当前温度：</span>
+                        <span class="data-value" id="current-temp">18°C</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">环境湿度：</span>
+                        <span class="data-value" id="humidity">75%</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">当前位置：</span>
+                        <span class="data-value" id="location">水产养殖场</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">冷链持续时间：</span>
+                        <span class="data-value" id="duration">0小时</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">当前决策：</span>
+                        <span class="data-value" id="decision">未选择</span>
+                    </div>
+                </div>
+                
+                <div class="quality-indicators">
+                    <div class="indicator">
+                        <div class="indicator-title">
+                            <span>新鲜度：</span>
+                            <span id="freshness-value">98%</span>
+                        </div>
+                        <div class="indicator-bar">
+                            <div class="indicator-progress" id="freshness-bar" style="width: 98%; background: linear-gradient(90deg, #4CAF50, #8BC34A);"></div>
+                        </div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-title">
+                            <span>汁液流失：</span>
+                            <span id="juice-value">2%</span>
+                        </div>
+                        <div class="indicator-bar">
+                            <div class="indicator-progress" id="juice-bar" style="width: 2%; background: linear-gradient(90deg, #FF9800, #FFC107);"></div>
+                        </div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-title">
+                            <span>色泽变化：</span>
+                            <span id="color-value">5%</span>
+                        </div>
+                        <div class="indicator-bar">
+                            <div class="indicator-progress" id="color-bar" style="width: 5%; background: linear-gradient(90deg, #F44336, #E91E63);"></div>
+                        </div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-title">
+                            <span>微生物增长：</span>
+                            <span id="micro-value">3%</span>
+                        </div>
+                        <div class="indicator-bar">
+                            <div class="indicator-progress" id="micro-bar" style="width: 3%; background: linear-gradient(90deg, #9C27B0, #673AB7);"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="ai-prediction">
+                    <div class="prediction-title"><i class="fas fa-brain"></i> AI品质预测</div>
+                    <div class="prediction-content" id="prediction-content">
+                        <p>基于当前冷链数据和环境条件，AI预测模型显示：</p>
+                        <p>• 如果温度维持在<span class="highlight">0-4°C</span>，预计48小时内新鲜度保持率 >90%</p>
+                        <p>• 温度每升高<span class="highlight">5°C</span>，微生物生长速度增加一倍</p>
+                        <p>• 当前冷链条件下，预计货架寿命剩余：<span class="highlight">72小时</span></p>
+                        <p>• 汁液流失率每小时增加<span class="highlight">0.5%</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn" id="prev-btn">
+                <i class="fas fa-arrow-left"></i> 上一环节
+            </button>
+            <button class="control-btn" id="next-btn">
+                下一环节 <i class="fas fa-arrow-right"></i>
+            </button>
+            <button class="control-btn" id="reset-btn">
+                <i class="fas fa-redo"></i> 重新开始
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 场景管理
+            const locations = ['farm', 'fishing', 'processing', 'transport', 'market', 'table'];
+            let currentLocation = 0;
+            const locationElements = locations.map(id => document.getElementById(id));
+            const locationNames = ['水产养殖场', '捕捞作业区', '水产品加工厂', '冷链运输车', '生鲜超市', '消费者餐桌'];
+            
+            // 决策点元素
+            const decisionPoints = [
+                document.getElementById('decision-1'),
+                document.getElementById('decision-2'),
+                document.getElementById('decision-3'),
+                document.getElementById('decision-4'),
+                document.getElementById('decision-5')
+            ];
+            
+            // 数据元素
+            const currentTempEl = document.getElementById('current-temp');
+            const locationEl = document.getElementById('location');
+            const durationEl = document.getElementById('duration');
+            const decisionEl = document.getElementById('decision');
+            const freshnessBar = document.getElementById('freshness-bar');
+            const freshnessValue = document.getElementById('freshness-value');
+            const juiceBar = document.getElementById('juice-bar');
+            const juiceValue = document.getElementById('juice-value');
+            const colorBar = document.getElementById('color-bar');
+            const colorValue = document.getElementById('color-value');
+            const microBar = document.getElementById('micro-bar');
+            const microValue = document.getElementById('micro-value');
+            const predictionContent = document.getElementById('prediction-content');
+            
+            // 温度设置（每个场景的初始温度）
+            const locationTemps = [18, 15, 5, 4, 4, 20];
+            
+            // 决策记录
+            const decisions = Array(5).fill(null);
+            
+            // 初始化显示
+            updateLocation();
+            
+            // 下一场景
+            document.getElementById('next-btn').addEventListener('click', function() {
+                if (currentLocation < locations.length - 1) {
+                    currentLocation++;
+                    updateLocation();
+                    
+                    // 在除养殖场外的每个场景显示决策点
+                    if (currentLocation > 0 && currentLocation < 6) {
+                        setTimeout(() => {
+                            decisionPoints[currentLocation-1].classList.add('active');
+                        }, 1000);
+                    }
+                }
+            });
+            
+            // 上一场景
+            document.getElementById('prev-btn').addEventListener('click', function() {
+                if (currentLocation > 0) {
+                    currentLocation--;
+                    updateLocation();
+                    // 隐藏所有决策点
+                    decisionPoints.forEach(dp => dp.classList.remove('active'));
+                }
+            });
+            
+            // 重置
+            document.getElementById('reset-btn').addEventListener('click', function() {
+                currentLocation = 0;
+                decisions.fill(null);
+                updateLocation();
+                // 隐藏所有决策点
+                decisionPoints.forEach(dp => dp.classList.remove('active'));
+                resetQualityIndicators();
+                decisionEl.textContent = "未选择";
+                updatePrediction();
+            });
+            
+            // 决策选项处理
+            decisionPoints.forEach((dp, index) => {
+                dp.querySelectorAll('.option-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const decision = this.dataset.decision;
+                        decisions[index] = decision;
+                        dp.classList.remove('active');
+                        
+                        // 更新决策显示
+                        decisionEl.textContent = this.textContent;
+                        
+                        // 根据决策更新品质指标
+                        applyDecisionEffects(index, decision);
+                        
+                        // 更新AI预测
+                        updatePrediction();
+                    });
+                });
+            });
+            
+            // 应用决策效果
+            function applyDecisionEffects(stageIndex, decision) {
+                let freshnessChange = 0;
+                let juiceChange = 0;
+                let colorChange = 0;
+                let microChange = 0;
+                
+                // 根据不同阶段的决策应用不同效果
+                switch(stageIndex) {
+                    case 0: // 养殖场
+                        if (decision === 'precool') {
+                            freshnessChange = 0;
+                            juiceChange = 0;
+                        } else if (decision === 'ice') {
+                            freshnessChange = -3;
+                            juiceChange = 2;
+                        } else {
+                            freshnessChange = -10;
+                            juiceChange = 8;
+                            colorChange = 10;
+                        }
+                        break;
+                        
+                    case 1: // 捕捞
+                        if (decision === 'immediate') {
+                            freshnessChange = 0;
+                            juiceChange = 0;
+                        } else if (decision === 'delay') {
+                            freshnessChange = -8;
+                            juiceChange = 5;
+                            colorChange = 5;
+                            microChange = 10;
+                        } else {
+                            freshnessChange = -20;
+                            juiceChange = 15;
+                            colorChange = 15;
+                            microChange = 25;
+                        }
+                        break;
+                        
+                    case 2: // 加工厂
+                        if (decision === 'lowtemp') {
+                            freshnessChange = 2;
+                            juiceChange = -1;
+                            microChange = -5;
+                        } else if (decision === 'normal') {
+                            freshnessChange = -5;
+                            juiceChange = 3;
+                            microChange = 8;
+                        } else {
+                            freshnessChange = -15;
+                            juiceChange = 10;
+                            colorChange = 10;
+                            microChange = 20;
+                        }
+                        break;
+                        
+                    case 3: // 运输
+                        if (decision === 'repair') {
+                            freshnessChange = -15;
+                            juiceChange = 10;
+                            colorChange = 15;
+                            microChange = 20;
+                        } else if (decision === 'transfer') {
+                            freshnessChange = -8;
+                            juiceChange = 5;
+                            colorChange = 8;
+                            microChange = 12;
+                        } else {
+                            freshnessChange = -25;
+                            juiceChange = 15;
+                            colorChange = 25;
+                            microChange = 35;
+                        }
+                        break;
+                        
+                    case 4: // 超市
+                        if (decision === 'closed') {
+                            freshnessChange = 0;
+                            juiceChange = 0;
+                        } else if (decision === 'open') {
+                            freshnessChange = -5;
+                            juiceChange = 3;
+                            microChange = 8;
+                        } else {
+                            freshnessChange = -10;
+                            juiceChange = 8;
+                            colorChange = 10;
+                            microChange = 15;
+                        }
+                        break;
+                }
+                
+                // 应用变化
+                updateQuality(freshnessChange, juiceChange, colorChange, microChange);
+            }
+            
+            // 更新场景
+            function updateLocation() {
+                // 隐藏所有场景
+                locationElements.forEach(el => el.classList.remove('active'));
+                // 显示当前场景
+                locationElements[currentLocation].classList.add('active');
+                
+                // 更新数据面板
+                locationEl.textContent = locationNames[currentLocation];
+                currentTempEl.textContent = locationTemps[currentLocation] + '°C';
+                durationEl.textContent = (currentLocation * 2) + '小时';
+                
+                // 更新鱼的视觉状态
+                updateFishAppearance();
+                
+                // 更新品质指标
+                if (currentLocation === 0) {
+                    resetQualityIndicators();
+                }
+            }
+            
+            // 更新鱼的视觉状态
+            function updateFishAppearance() {
+                const fishBody = document.querySelector('.fish-body');
+                const freshness = parseInt(freshnessBar.style.width);
+                
+                // 根据新鲜度改变鱼的外观
+                if (freshness > 80) {
+                    fishBody.style.background = 'linear-gradient(90deg, #4a8fe7, #2a6bcc)';
+                } else if (freshness > 60) {
+                    fishBody.style.background = 'linear-gradient(90deg, #6a8fc7, #4a6bac)';
+                } else if (freshness > 40) {
+                    fishBody.style.background = 'linear-gradient(90deg, #8a8fa7, #6a6b8c)';
+                } else {
+                    fishBody.style.background = 'linear-gradient(90deg, #aa8f87, #8a6b6c)';
+                }
+                
+                // 根据位置添加特殊效果
+                if (locations[currentLocation] === 'processing') {
+                    document.querySelector('.fish-fin').style.display = 'none';
+                }
+            }
+            
+            // 更新品质指标
+            function updateQuality(freshChange, juiceChange, colorChange, microChange) {
+                // 获取当前值
+                let freshness = parseInt(freshnessBar.style.width);
+                let juice = parseInt(juiceBar.style.width);
+                let color = parseInt(colorBar.style.width);
+                let micro = parseInt(microBar.style.width);
+                
+                // 应用变化
+                freshness = Math.max(0, freshness + freshChange);
+                juice = Math.min(100, juice + juiceChange);
+                color = Math.min(100, color + colorChange);
+                micro = Math.min(100, micro + microChange);
+                
+                // 更新界面
+                freshnessBar.style.width = freshness + '%';
+                freshnessValue.textContent = freshness + '%';
+                
+                juiceBar.style.width = juice + '%';
+                juiceValue.textContent = juice + '%';
+                
+                colorBar.style.width = color + '%';
+                colorValue.textContent = color + '%';
+                
+                microBar.style.width = micro + '%';
+                microValue.textContent = micro + '%';
+                
+                // 更新鱼的视觉状态
+                updateFishAppearance();
+            }
+            
+            // 更新AI预测
+            function updatePrediction() {
+                const freshness = parseInt(freshnessBar.style.width);
+                const micro = parseInt(microBar.style.width);
+                
+                let shelfLife = 72; // 默认货架寿命
+                let qualityRisk = "低风险";
+                let recommendation = "继续保持当前冷链条件";
+                
+                // 根据当前状态调整预测
+                if (freshness < 60) {
+                    shelfLife = Math.max(12, Math.floor(shelfLife * (freshness/100)));
+                    qualityRisk = "中高风险";
+                    recommendation = "建议加强温度控制，减少周转时间";
+                }
+                
+                if (micro > 20) {
+                    shelfLife = Math.max(6, Math.floor(shelfLife * (1 - (micro/100))));
+                    qualityRisk = "高风险";
+                    recommendation = "立即检查冷链完整性，考虑产品召回";
+                }
+                
+                // 生成预测内容
+                const predictionHTML = `
+                    <p>基于当前冷链数据和品质指标，AI预测模型显示：</p>
+                    <p>• 产品新鲜度评级: <span class="highlight">${freshness >= 80 ? '优' : freshness >= 60 ? '良' : '差'}</span></p>
+                    <p>• 微生物安全风险: <span class="highlight">${qualityRisk}</span></p>
+                    <p>• 预计货架寿命剩余: <span class="highlight">${shelfLife}小时</span></p>
+                    <p>• 汁液流失率每小时增加: <span class="highlight">${freshness >= 80 ? '0.3%' : freshness >= 60 ? '0.7%' : '1.5%'}</span></p>
+                    <p>• 专家建议: <span class="highlight">${recommendation}</span></p>
+                `;
+                
+                predictionContent.innerHTML = predictionHTML;
+            }
+            
+            // 重置品质指标
+            function resetQualityIndicators() {
+                freshnessBar.style.width = '98%';
+                freshnessValue.textContent = '98%';
+                
+                juiceBar.style.width = '2%';
+                juiceValue.textContent = '2%';
+                
+                colorBar.style.width = '5%';
+                colorValue.textContent = '5%';
+                
+                microBar.style.width = '3%';
+                microValue.textContent = '3%';
+                
+                updateFishAppearance();
+                updatePrediction();
+            }
+            
+            // 初始化鱼的游泳动画
+            const fishModel = document.querySelector('.fish-model');
+            fishModel.classList.add('swimming');
+            
+            // 模拟环境温度变化
+            setInterval(() => {
+                if (currentLocation > 0) {
+                    // 随机温度波动
+                    const tempFluctuation = (Math.random() - 0.5) * 2;
+                    const currentTemp = locationTemps[currentLocation] + tempFluctuation;
+                    currentTempEl.textContent = currentTemp.toFixed(1) + '°C';
+                    
+                    // 温度变化影响品质
+                    if (currentTemp > 5) {
+                        const change = (currentTemp - 5) * 0.1;
+                        updateQuality(-change, change, change, change * 2);
+                        updatePrediction();
+                    }
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
